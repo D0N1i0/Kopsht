@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff6ea8" />
+  <title>Will u be my valentine?</title>
+  <style>
+    :root{
+      --bg1:#ffb3d3;
+      --bg2:#ffd1b8;
+      --bg3:#ffc2e7;
+      --card: rgba(255,255,255,.18);
+      --card2: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.35);
+
+      --yes1:#ff3d8a;
+      --yes2:#ff2b5c;
+
+      --no1:#2a2a2a;
+      --no2:#141414;
+
+      --text:#fff;
+      --shadow: 0 18px 45px rgba(0,0,0,.22);
+      --shadow2: 0 10px 25px rgba(0,0,0,.18);
+
+      --chip1:#ff4d9a;
+      --chip2:#ff7aa8;
+      --chip3:#ffb84d;
+      --chip4:#7b61ff;
+      --chip5:#2ad3b3;
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      overflow:hidden;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      touch-action:none; /* important: we manage pointer events */
+    }
+
+    body{
+      background:
+        radial-gradient(1200px 900px at 20% 15%, rgba(255,255,255,.25), transparent 55%),
+        radial-gradient(900px 700px at 85% 30%, rgba(255,255,255,.20), transparent 60%),
+        radial-gradient(700px 600px at 50% 90%, rgba(255,255,255,.18), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+    }
+
+    /* floating hearts layer */
+    #floatLayer{
+      position:fixed; inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
+      opacity:.85;
+    }
+    .floater{
+      position:absolute;
+      font-size: 18px;
+      opacity:.75;
+      transform: translate3d(0,0,0);
+      animation: drift var(--dur) linear infinite;
+      will-change: transform;
+    }
+    @keyframes drift{
+      0%   { transform: translate3d(var(--x), calc(100vh + 60px), 0) rotate(var(--r)); opacity: 0; }
+      10%  { opacity: .75; }
+      90%  { opacity: .75; }
+      100% { transform: translate3d(calc(var(--x) + var(--dx)), -80px, 0) rotate(calc(var(--r) + 180deg)); opacity: 0; }
+    }
+
+    /* main container */
+    #app{
+      position:relative;
+      width:100%;
+      height:100%;
+      padding:
+        calc(18px + var(--safe-top))
+        calc(18px + var(--safe-right))
+        calc(18px + var(--safe-bottom))
+        calc(18px + var(--safe-left));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* glass card */
+    .panel{
+      width: min(560px, 92vw);
+      height: min(760px, 88vh);
+      border-radius: 28px;
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      padding: 22px 18px 16px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .topRow{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 2px 6px 10px;
+    }
+
+    .title{
+      text-align:center;
+      margin: 18px 8px 0;
+      font-weight: 800;
+      letter-spacing: .4px;
+      line-height: 1.06;
+      font-size: clamp(28px, 5vw, 44px);
+      text-shadow: 0 10px 24px rgba(0,0,0,.18);
+    }
+    .subtitle{
+      margin-top: 10px;
+      opacity:.9;
+      font-weight:600;
+      font-size: clamp(12px, 2.6vw, 14px);
+      text-align:center;
+    }
+
+    /* button playground area */
+    #playground{
+      width:100%;
+      height: 100%;
+      position: relative;
+      margin-top: 16px;
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    /* subtle sparkle overlay */
+    #sparkle{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(12px 12px at 20% 18%, rgba(255,255,255,.20), transparent 60%),
+        radial-gradient(10px 10px at 80% 40%, rgba(255,255,255,.18), transparent 60%),
+        radial-gradient(10px 10px at 55% 75%, rgba(255,255,255,.16), transparent 60%),
+        radial-gradient(9px 9px at 30% 65%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(8px 8px at 70% 20%, rgba(255,255,255,.15), transparent 60%);
+      opacity:.7;
+      pointer-events:none;
+      mix-blend-mode: soft-light;
+    }
+
+    .btn{
+      position:absolute;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 26px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      font-size: 18px;
+      color:#fff;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+      transform: translate(-50%,-50%);
+      transition: transform .25s cubic-bezier(.2,.8,.2,1), filter .2s ease;
+      will-change: transform, left, top, width, height;
+    }
+    .btn:active{ transform: translate(-50%,-50%) scale(.98); }
+
+    #yesBtn{
+      background: linear-gradient(135deg, var(--yes1), var(--yes2));
+      filter: saturate(1.05);
+      min-width: 170px;
+      min-height: 58px;
+      z-index: 2;
+    }
+    #yesBtn:hover{ filter: brightness(1.05); }
+
+    #noBtn{
+      background: linear-gradient(135deg, var(--no1), var(--no2));
+      min-width: 160px;
+      min-height: 56px;
+      z-index: 1;
+      opacity: .95;
+    }
+
+    /* message chips */
+    #chips{
+      position:absolute;
+      inset: 0;
+      pointer-events:none;
+      z-index: 4;
+    }
+    .chip{
+      position:absolute;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing:.2px;
+      background: rgba(0,0,0,.12);
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transform: translate(-50%,-50%) scale(.85);
+      opacity: 0;
+      animation: chipInOut 2.8s ease forwards;
+      white-space:nowrap;
+    }
+    @keyframes chipInOut{
+      0% { opacity:0; transform: translate(-50%,-50%) scale(.85); }
+      12%{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+      80%{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+      100%{ opacity:0; transform: translate(-50%,-50%) scale(.92); }
+    }
+
+    /* sound toggle */
+    .pill{
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.10);
+      color:#fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-weight: 800;
+      font-size: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill small{ opacity:.85; font-weight: 700; }
+
+    /* final overlay */
+    #final{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 10;
+      background: radial-gradient(900px 700px at 50% 20%, rgba(255,255,255,.20), transparent 60%),
+                  rgba(0,0,0,.20);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    #finalCard{
+      width: min(520px, 88vw);
+      border-radius: 28px;
+      padding: 22px 18px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.10));
+      border: 1px solid rgba(255,255,255,.38);
+      box-shadow: var(--shadow);
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    #finalCard h2{
+      margin: 6px 0 6px;
+      font-size: clamp(22px, 4.8vw, 34px);
+      letter-spacing:.3px;
+      text-shadow: 0 12px 26px rgba(0,0,0,.18);
+    }
+    #finalCard p{
+      margin: 10px 0 14px;
+      font-weight: 700;
+      opacity:.95;
+      line-height: 1.35;
+    }
+    .kissBtn{
+      border:none;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-weight: 900;
+      font-size: 14px;
+      color:#fff;
+      background: linear-gradient(135deg, #ff4d9a, #ff2b5c);
+      box-shadow: 0 14px 32px rgba(0,0,0,.22);
+      cursor:pointer;
+    }
+    .kissLine{
+      margin-top: 12px;
+      font-weight: 900;
+      opacity:0;
+      transform: translateY(6px);
+      transition: .35s ease;
+    }
+    .kissLine.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    /* confetti/hearts */
+    #burst{
+      position:absolute; inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index: 12;
+    }
+    .burstPiece{
+      position:absolute;
+      font-size: 18px;
+      opacity: 0;
+      transform: translate3d(0,0,0);
+      animation: burst 2.6s ease-out forwards;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.14));
+    }
+    @keyframes burst{
+      0%   { opacity: 0; transform: translate3d(var(--x), var(--y), 0) scale(.85) rotate(0deg); }
+      12%  { opacity: 1; }
+      100% { opacity: 0; transform: translate3d(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy)), 0) scale(1.05) rotate(220deg); }
+    }
+
+    /* small helper text bottom */
+    .hint{
+      position:absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 800;
+      opacity:.75;
+      text-shadow: 0 10px 22px rgba(0,0,0,.16);
+      pointer-events:none;
+    }
+
+    /* accessibility: reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .floater{ display:none; }
+      .btn{ transition: none; }
+      .chip{ animation: none; opacity:1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="floatLayer" aria-hidden="true"></div>
+
+  <div id="app">
+    <div class="panel" id="panel">
+      <div class="topRow">
+        <div class="pill" id="soundToggle" role="button" aria-label="Toggle sound">
+          <span id="soundIcon">🔇</span>
+          <div>
+            Sound <small id="soundLabel">off</small>
+          </div>
+        </div>
+        <div class="pill" id="resetBtn" role="button" aria-label="Reset">
+          ♻️ <div>Reset <small>start over</small></div>
+        </div>
+      </div>
+
+      <div class="title">Will u be my valentine? 💘</div>
+      <div class="subtitle">Be honest… but not *that* honest 😏</div>
+
+      <div id="playground">
+        <div id="sparkle"></div>
+        <div id="chips"></div>
+
+        <button class="btn" id="yesBtn">Yes 😍</button>
+        <button class="btn" id="noBtn">No 🥺</button>
+
+        <div class="hint" id="hint">Tip: try to tap “No” 😈</div>
+
+        <div id="final">
+          <div id="finalCard">
+            <h2>Knew it 😌💘</h2>
+            <p>See you on Valentine’s!<br/>You just made the right choice 😇</p>
+            <button class="kissBtn" id="kissBtn">Send me a kiss 💋</button>
+            <div class="kissLine" id="kissLine">Mwah 😘 now you owe me one in real life.</div>
+          </div>
+        </div>
+
+        <div id="burst" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // ---------- helpers ----------
+      const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+      const rand  = (min, max) => Math.random() * (max - min) + min;
+      const pick  = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      // ---------- DOM ----------
+      const floatLayer = document.getElementById('floatLayer');
+      const playground = document.getElementById('playground');
+      const yesBtn = document.getElementById('yesBtn');
+      const noBtn  = document.getElementById('noBtn');
+      const chips  = document.getElementById('chips');
+      const final  = document.getElementById('final');
+      const burst  = document.getElementById('burst');
+      const hint   = document.getElementById('hint');
+      const resetBtn = document.getElementById('resetBtn');
+
+      const soundToggle = document.getElementById('soundToggle');
+      const soundIcon = document.getElementById('soundIcon');
+      const soundLabel = document.getElementById('soundLabel');
+
+      const kissBtn = document.getElementById('kissBtn');
+      const kissLine = document.getElementById('kissLine');
+
+      // ---------- state ----------
+      let attempts = 0;
+      let yesScale = 1.0;
+      let noLocked = false;   // when Yes covers it
+      let lastMoveAt = 0;
+      let soundOn = false;
+
+      const messages = [
+        "Nice try 😏",
+        "Good girl… almost 😌",
+        "No button is shy today 🙈",
+        "Stop chasing, just say yes 😘",
+        "That’s not happening 😇",
+        "You’re adorable, but… no 😈",
+        "Uh-uh. Tap Yes 😍",
+        "I’m faster than you 😌"
+      ];
+
+      const chipColors = [
+        "linear-gradient(135deg, var(--chip1), var(--chip2))",
+        "linear-gradient(135deg, var(--chip3), #ff6ea8)",
+        "linear-gradient(135deg, var(--chip4), #ff6ea8)",
+        "linear-gradient(135deg, var(--chip5), #ff6ea8)",
+        "linear-gradient(135deg, #ff6ea8, #ffd24d)"
+      ];
+
+      // ---------- initial layout ----------
+      function placeButtonsInitial(){
+        const r = playground.getBoundingClientRect();
+        const cx = r.width / 2;
+        const cy = r.height * 0.52;
+
+        // Yes left, No right like TikTok style
+        setBtnCenter(yesBtn, cx - r.width * 0.18, cy);
+        setBtnCenter(noBtn,  cx + r.width * 0.18, cy);
+
+        yesScale = 1.0;
+        applyYesScale();
+        noLocked = false;
+        noBtn.style.pointerEvents = "auto";
+        noBtn.style.opacity = ".95";
+        noBtn.style.zIndex = "1";
+        yesBtn.style.zIndex = "2";
+        attempts = 0;
+        hint.style.opacity = ".75";
+        kissLine.classList.remove("show");
+      }
+
+      function setBtnCenter(btn, x, y){
+        btn.style.left = `${x}px`;
+        btn.style.top  = `${y}px`;
+      }
+
+      // ---------- floating hearts ----------
+      function spawnFloaters(){
+        const emojis = ["💗","💖","💘","💞","💕","✨","🥰","😍"];
+        const count = 16; // subtle
+        floatLayer.innerHTML = "";
+        for(let i=0;i<count;i++){
+          const el = document.createElement("div");
+          el.className = "floater";
+          el.textContent = pick(emojis);
+          el.style.setProperty("--x", `${rand(-10, 110)}vw`);
+          el.style.setProperty("--dx", `${rand(-15, 15)}vw`);
+          el.style.setProperty("--r", `${rand(-25, 25)}deg`);
+          el.style.setProperty("--dur", `${rand(9, 18)}s`);
+          el.style.fontSize = `${rand(16, 24)}px`;
+          el.style.animationDelay = `${rand(0, 6)}s`;
+          floatLayer.appendChild(el);
+        }
+      }
+
+      // ---------- sound (muted by default) ----------
+      // tiny "click/boop" with WebAudio (no external files)
+      let audioCtx = null;
+      function beep(type="boop"){
+        if(!soundOn) return;
+        try{
+          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const t0 = audioCtx.currentTime;
+
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination);
+
+          if(type === "boop"){
+            o.type = "sine";
+            o.frequency.setValueAtTime(420, t0);
+            o.frequency.exponentialRampToValueAtTime(260, t0 + 0.12);
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.14);
+            o.start(t0); o.stop(t0 + 0.16);
+          } else if(type === "yay"){
+            o.type = "triangle";
+            o.frequency.setValueAtTime(520, t0);
+            o.frequency.exponentialRampToValueAtTime(840, t0 + 0.08);
+            o.frequency.exponentialRampToValueAtTime(640, t0 + 0.18);
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+            o.start(t0); o.stop(t0 + 0.24);
+          }
+        }catch(e){}
+      }
+
+      function setSoundUI(){
+        soundIcon.textContent = soundOn ? "🔊" : "🔇";
+        soundLabel.textContent = soundOn ? "on" : "off";
+      }
+      soundToggle.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        soundOn = !soundOn;
+        setSoundUI();
+        // unlock audio context on first interaction
+        if(soundOn && !audioCtx){
+          try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+        }
+        beep("boop");
+      });
+
+      // ---------- chips ----------
+      let chipQueue = [];
+      function showChip(text){
+        const r = playground.getBoundingClientRect();
+
+        // limit chips on screen
+        const existing = chips.querySelectorAll(".chip");
+        if(existing.length >= 5){
+          existing[0].remove();
+        }
+
+        const el = document.createElement("div");
+        el.className = "chip";
+        el.textContent = text;
+
+        // random romantic background
+        el.style.background = pick(chipColors);
+
+        // place near top-ish, random x
+        const x = rand(r.width * 0.22, r.width * 0.78);
+        const y = rand(r.height * 0.18, r.height * 0.32);
+        el.style.left = `${x}px`;
+        el.style.top  = `${y}px`;
+
+        chips.appendChild(el);
+        setTimeout(() => el.remove(), 2850);
+      }
+
+      // throttle messages so not spam
+      let lastChipAt = 0;
+      function maybeChip(){
+        const now = performance.now();
+        if(now - lastChipAt < 650) return;
+        lastChipAt = now;
+
+        const msg = pick(messages);
+        showChip(msg);
+      }
+
+      // ---------- Yes growth + No becoming non-option ----------
+      function applyYesScale(){
+        // scale via transform, but also increase size slightly for better “cover”
+        yesBtn.style.transform = `translate(-50%,-50%) scale(${yesScale})`;
+      }
+
+      function growYes(){
+        // gradual: early slow, then stronger
+        const extra = attempts < 6 ? 0.06 : attempts < 10 ? 0.085 : 0.11;
+        yesScale = clamp(yesScale + extra, 1, 4.2);
+        applyYesScale();
+
+        // once big enough, make No “stuck under Yes”
+        if(yesScale >= 2.75 && !noLocked){
+          lockNoUnderYes();
+        }
+      }
+
+      function lockNoUnderYes(){
+        noLocked = true;
+        // push No exactly under Yes, and ensure Yes covers it
+        const yesPos = getBtnCenter(yesBtn);
+        setBtnCenter(noBtn, yesPos.x + 10, yesPos.y + 10);
+
+        noBtn.style.zIndex = "0";
+        yesBtn.style.zIndex = "3";
+        noBtn.style.opacity = ".55";
+        noBtn.style.pointerEvents = "none"; // no longer interactable
+        hint.style.opacity = ".2";
+      }
+
+      function getBtnCenter(btn){
+        const x = parseFloat(btn.style.left || "0");
+        const y = parseFloat(btn.style.top  || "0");
+        return {x, y};
+      }
+
+      // ---------- No escape (physics-ish) ----------
+      function moveNoAway(pointerX, pointerY){
+        if(noLocked) return;
+
+        const now = performance.now();
+        // don't move insanely frequently
+        if(now - lastMoveAt < 140) return;
+        lastMoveAt = now;
+
+        const r = playground.getBoundingClientRect();
+        const noRect = noBtn.getBoundingClientRect();
+
+        // Convert pointer coords to playground coords
+        const px = pointerX - r.left;
+        const py = pointerY - r.top;
+
+        const noCenter = getBtnCenter(noBtn);
+        const dx = noCenter.x - px;
+        const dy = noCenter.y - py;
+        const dist = Math.hypot(dx, dy);
+
+        // Escape strength: closer -> larger jump
+        const close = clamp(1 - (dist / 260), 0, 1);
+        const jump = 110 + close * 220; // 110..330
+
+        // random direction biased away from pointer
+        let ang = Math.atan2(dy, dx) + rand(-0.65, 0.65);
+
+        // sometimes pure teleport randomness (TikTok vibe)
+        if(Math.random() < 0.22) ang = rand(0, Math.PI * 2);
+
+        const targetX = noCenter.x + Math.cos(ang) * jump;
+        const targetY = noCenter.y + Math.sin(ang) * jump;
+
+        // keep inside viewport (playground)
+        // compute safe bounds accounting for button size
+        const w = noBtn.offsetWidth;
+        const h = noBtn.offsetHeight;
+        const pad = 14;
+
+        const minX = pad + w/2;
+        const maxX = r.width - pad - w/2;
+        const minY = pad + h/2;
+        const maxY = r.height - pad - h/2;
+
+        const x = clamp(targetX, minX, maxX);
+        const y = clamp(targetY, minY, maxY);
+
+        // random speed and easing
+        const dur = Math.round(180 + Math.random()*260); // 180..440
+        const easing = pick([
+          "cubic-bezier(.2,.8,.2,1)",
+          "cubic-bezier(.1,.9,.2,1)",
+          "cubic-bezier(.3,1,.2,1)",
+          "cubic-bezier(.2,.7,.2,1)"
+        ]);
+
+        noBtn.style.transition = `left ${dur}ms ${easing}, top ${dur}ms ${easing}, transform ${dur}ms ${easing}`;
+        // add a tiny "pop" scale when moving
+        noBtn.style.transform = "translate(-50%,-50%) scale(1.03)";
+        setBtnCenter(noBtn, x, y);
+
+        setTimeout(() => {
+          if(!noLocked) noBtn.style.transform = "translate(-50%,-50%) scale(1)";
+        }, dur);
+
+        attempts++;
+        maybeChip();
+        growYes();
+        beep("boop");
+      }
+
+      // ---------- detect "attempt No" properly on mobile ----------
+      // We track pointer moves over the whole playground and compare distance to No button.
+      let lastPointer = {x: 0, y: 0};
+      function onPointerMove(e){
+        if(noLocked) return;
+
+        const r = playground.getBoundingClientRect();
+        const px = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX);
+        const py = e.clientY ?? (e.touches && e.touches[0] && e.touches[0].clientY);
+        if(px == null || py == null) return;
+
+        lastPointer = {x:px, y:py};
+
+        const noRect = noBtn.getBoundingClientRect();
+        const cx = noRect.left + noRect.width/2;
+        const cy = noRect.top  + noRect.height/2;
+        const dist = Math.hypot(px - cx, py - cy);
+
+        // threshold depends on size; small buffer so it triggers before touching
+        const threshold = Math.max(46, Math.min(92, 56 + (noRect.width*0.12)));
+        if(dist < threshold){
+          moveNoAway(px, py);
+        }
+      }
+
+      // Prevent default scroll / pull-to-refresh issues inside playground
+      playground.addEventListener("pointermove", (e) => { e.preventDefault(); onPointerMove(e); }, {passive:false});
+      playground.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+
+        // if they tap near No, treat as attempt
+        const px = e.clientX, py = e.clientY;
+        const noRect = noBtn.getBoundingClientRect();
+        const cx = noRect.left + noRect.width/2;
+        const cy = noRect.top  + noRect.height/2;
+        const dist = Math.hypot(px - cx, py - cy);
+
+        if(dist < 120 && !noLocked){
+          moveNoAway(px, py);
+        }
+      }, {passive:false});
+
+      // On actual hovering No (desktop), move it immediately
+      noBtn.addEventListener("pointerenter", (e) => {
+        e.preventDefault();
+        moveNoAway(e.clientX, e.clientY);
+      });
+
+      // Never allow click on No
+      noBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // If somehow clicked, still escape.
+        moveNoAway(lastPointer.x || e.clientX, lastPointer.y || e.clientY);
+        return false;
+      });
+
+      // ---------- Yes click ----------
+      function launchFinal(){
+        final.style.display = "flex";
+        hint.style.opacity = ".15";
+        burstHearts(70, 2400);
+        beep("yay");
+      }
+
+      yesBtn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        launchFinal();
+      });
+
+      kissBtn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        kissLine.classList.add("show");
+        burstHearts(28, 1600);
+        beep("boop");
+      });
+
+      // tap outside final card to close (optional)
+      final.addEventListener("pointerdown", (e) => {
+        if(e.target === final){
+          final.style.display = "none";
+        }
+      });
+
+      // ---------- burst animation ----------
+      function burstHearts(count=60, durationMs=2600){
+        const r = playground.getBoundingClientRect();
+        const emojis = ["💗","💖","💘","💞","💕","✨","🥰","😍","🎉"];
+
+        // clear older
+        burst.innerHTML = "";
+
+        for(let i=0;i<count;i++){
+          const el = document.createElement("div");
+          el.className = "burstPiece";
+          el.textContent = pick(emojis);
+
+          // start near center-ish
+          const x = rand(r.width*0.35, r.width*0.65);
+          const y = rand(r.height*0.25, r.height*0.55);
+
+          // scatter
+          const dx = rand(-r.width*0.55, r.width*0.55);
+          const dy = rand(-r.height*0.55, r.height*0.55);
+
+          el.style.setProperty("--x", `${x}px`);
+          el.style.setProperty("--y", `${y}px`);
+          el.style.setProperty("--dx", `${dx}px`);
+          el.style.setProperty("--dy", `${dy}px`);
+
+          el.style.fontSize = `${rand(16, 26)}px`;
+          el.style.left = "0px";
+          el.style.top = "0px";
+          el.style.animationDelay = `${rand(0, 0.35)}s`;
+
+          burst.appendChild(el);
+        }
+
+        setTimeout(() => {
+          burst.innerHTML = "";
+        }, durationMs + 400);
+      }
+
+      // ---------- reset ----------
+      resetBtn.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        final.style.display = "none";
+        placeButtonsInitial();
+        chips.innerHTML = "";
+        burst.innerHTML = "";
+        beep("boop");
+      });
+
+      // ---------- keep inside on resize ----------
+      function keepNoInside(){
+        if(noLocked) return;
+        const r = playground.getBoundingClientRect();
+        const w = noBtn.offsetWidth;
+        const h = noBtn.offsetHeight;
+        const pad = 14;
+
+        const minX = pad + w/2;
+        const maxX = r.width - pad - w/2;
+        const minY = pad + h/2;
+        const maxY = r.height - pad - h/2;
+
+        const p = getBtnCenter(noBtn);
+        setBtnCenter(noBtn, clamp(p.x, minX, maxX), clamp(p.y, minY, maxY));
+      }
+
+      window.addEventListener("resize", () => {
+        // re-place if needed, keep things visible
+        keepNoInside();
+      });
+
+      // ---------- init ----------
+      setSoundUI();
+      spawnFloaters();
+      placeButtonsInitial();
+
+      // iOS: prevent double-tap zoom on older Safari
+      let lastTap = 0;
+      document.addEventListener("touchend", (e) => {
+        const now = Date.now();
+        if(now - lastTap < 300){ e.preventDefault(); }
+        lastTap = now;
+      }, {passive:false});
+    })();
+  </script>
+</body>
+</html>
